@@ -1,0 +1,4 @@
+click==5.1
+pycrypto==2.6.1
+pyelliptic==1.5.7
+

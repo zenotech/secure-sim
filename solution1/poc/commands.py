@@ -72,7 +72,8 @@ def encrypt(in_file, target_site):
     click.echo("Encrypting file {} for site {}".format(in_file, target_site))
     public_key = get_site_public_key(target_site)
     private_key = get_priv_key()
-    crypto.encrypt_file(private_key, public_key, in_file)
+    time, size, out_file = crypto.encrypt_file(private_key, public_key, in_file)
+    click.echo("{} bytes encrypted in {} seconds, output to {}".format(size, time, out_file))
 
 
 @cli.command()

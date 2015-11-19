@@ -1,3 +1,4 @@
+import time
 import pyelliptic
 import os
 import struct
@@ -33,6 +34,7 @@ def shared_key(priv_key, pub_key, format = 'binary'):
 def encrypt_file(key, public_key, in_filename, out_filename=None, ciphername='aes-256-cbc'):
     """ 
     """
+    start = time.clock()
     if not out_filename:
         out_filename = in_filename + '.enc'
 
@@ -70,7 +72,8 @@ def encrypt_file(key, public_key, in_filename, out_filename=None, ciphername='ae
 
                 outfile.write(ctx.update((chunk)))
             outfile.write(ctx.final())
-
+    end = time.clock()
+    return ((end - start, filesize, out_filename))
 
 def decrypt_file(key, in_filename, out_filename=None, ciphername='aes-256-cbc'):
     """ 

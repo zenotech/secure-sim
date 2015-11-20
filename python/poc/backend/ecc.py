@@ -14,16 +14,22 @@ CIPHER = 'aes-256-cbc'
 
 class Key(object):
 
-    def __init__(self, priv_key = None, pub_key = None):
+    def __init__(self, priv_key=None, pub_key=None):
         if priv_key or pub_key:
             if pub_key and pub_key:
-                pubkey_x, pubkey_y  = pyelliptic.ECC._decode_pubkey(pub_key, format='hex')
-                self.key = pyelliptic.ECC(curve=CURVE, raw_privkey = unhexlify(priv_key), pubkey_x = pubkey_x, pubkey_y = pubkey_y)
+                pubkey_x, pubkey_y = pyelliptic.ECC._decode_pubkey(
+                    pub_key,
+                    format='hex')
+                self.key = pyelliptic.ECC(curve=CURVE,
+                                          raw_privkey=unhexlify(priv_key),
+                                          pubkey_x=pubkey_x,
+                                          pubkey_y=pubkey_y)
             else:
-                raise ValueError("Private AND Public key both need to be specified")
+                raise ValueError("Private AND Public key"
+                                 "both need to be specified")
         else:
             self.key = self.generate_key()
-    
+
     @staticmethod
     def generate_key():
         return pyelliptic.ECC(curve=CURVE)
@@ -34,7 +40,7 @@ class Key(object):
     def get_public_key(self):
         return self.key.get_pubkey()
 
-    def shared_key(self, pub_key, format = 'binary'):
+    def shared_key(self, pub_key, format='binary'):
         """Generate a new shared encryption key for given public key"""
         shared_key = self.key.get_ecdh_key(pub_key, format)
         shared_key = shared_key[:32] + SHA384.new(shared_key[32:]).digest()
@@ -46,26 +52,17 @@ class Key(object):
         start = time.clock()
         if not out_filename:
             out_filename = in_filename + '.enc'
-
         curve = pyelliptic.OpenSSL.get_curve_by_id(self.key.curve)
-
         ephem = pyelliptic.ECC(curve=curve)
-
-        pubkey_x, pubkey_y = pyelliptic.ECC._decode_pubkey(public_key, format='hex')
-
+        pubkey_x, pubkey_y = pyelliptic.ECC._decode_pubkey(public_key,
+                                                           format='hex')
         key = sha512(ephem.raw_get_ecdh_key(pubkey_x, pubkey_y)).digest()
-
         key_e, key_m = key[:32], key[32:]
-        
         pubkey = ephem.get_pubkey()
-        
         iv = pyelliptic.Cipher.gen_IV(CIPHER)
         blocksize = pyelliptic.Cipher.get_blocksize(CIPHER)
-
         ctx = pyelliptic.Cipher(key_e, iv, 1, CIPHER)
-
         filesize = os.path.getsize(in_filename)
-
         with open(in_filename, 'rb') as infile:
             with open(out_filename, 'wb') as outfile:
                 outfile.write(struct.pack('<Q', filesize))
@@ -101,7 +98,8 @@ class Key(object):
                 coord_len = len(self.key.pubkey_x) * 2 + 1
                 pkey = infile.read(coord_len)
                 pubkey_x, pubkey_y = pyelliptic.ECC._decode_pubkey(pkey)
-                key = sha512(self.key.raw_get_ecdh_key(pubkey_x, pubkey_y)).digest()
+                key = sha512(self.key.raw_get_ecdh_key(pubkey_x, 
+                                                       pubkey_y)).digest()
                 key_e, key_m = key[:32], key[32:]
                 ctx = pyelliptic.Cipher(key_e, iv, 0, CIPHER)
                 while True:

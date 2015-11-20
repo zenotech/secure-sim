@@ -1,12 +1,12 @@
 import os
 import click
-import ConfigParser
 from binascii import hexlify
 
 from keystore import KeyStore
 from backend import ecc as crypto
 
 APP_NAME = 'hpc_security_demo'
+
 
 @click.group()
 @click.pass_context
@@ -15,15 +15,20 @@ def cli(ctx):
     if ctx.invoked_subcommand not in ['configure', 'generate_key']:
         config = get_config_file()
         if config is None:
-            raise click.UsageError("Configuration not found! Please run configure before first use")
+            raise click.UsageError("Configuration not found!"
+                                   "Please run configure before first use")
 
 
 @cli.command()
 def generate_key():
     """Generate new key pair"""
     key = crypto.Key.generate_key()
-    click.echo('Private Key (len {}):: \n{}'.format(len(hexlify(key.get_privkey())), hexlify(key.get_privkey())))
-    click.echo('Public Key (len {})::\n{}'.format(len(hexlify(key.get_pubkey())), hexlify(key.get_pubkey())))
+    click.echo('Private Key (len {}):: \n{}'.format(
+        len(hexlify(key.get_privkey())),
+        hexlify(key.get_privkey())))
+    click.echo('Public Key (len {})::\n{}'.format(
+        len(hexlify(key.get_pubkey())),
+        hexlify(key.get_pubkey())))
 
 
 @cli.command()
@@ -46,7 +51,7 @@ def add_site(site_name, public_key):
     click.echo('Adding site key for site {}'.format(site_name))
     key_store = KeyStore(get_config_file())
     key_store.add_site(site_name, public_key)
-   
+
 
 @cli.command()
 @click.argument('site')
@@ -59,37 +64,44 @@ def get_shared_key(site):
 @cli.command()
 @click.argument('target_site', "Site to encrypt file for")
 @click.argument('input', "File to encrypt")
-@click.option('--output', '-o', help='File name to output', default = None)
+@click.option('--output', '-o', help='File name to output', default=None)
 def encrypt(target_site, input, output):
     """Encrypt File"""
     click.echo("Encrypting file {} for site {}".format(input, input))
     key_store = KeyStore(get_config_file())
     time, size, out_file = key_store.encrypt_file(target_site, input, output)
-    click.echo("{} bytes encrypted in {} seconds, output to {}".format(size, time, out_file))
+    click.echo("{} bytes encrypted in {} seconds, output to {}".format(
+        size, time, out_file))
 
 
 @cli.command()
 @click.argument('input', "File to decrypt")
-@click.option('--output', help='File name to output', default = None)
+@click.option('--output', help='File name to output', default=None)
 def decrypt(input, output):
     """Decrypt File"""
     click.echo("Decrypting file {}".format(input))
     key_store = KeyStore(get_config_file())
     time, size, out_file = key_store.decrypt_file(input, output)
-    click.echo("{} bytes decrypted in {} seconds, output to {}".format(size, time, out_file))
-
+    click.echo("{} bytes decrypted in {} seconds,output to {}".format(size,
+                                                                      time,
+                                                                      out_file))
 
 @cli.command()
 def configure():
     """Configure the client"""
     if not get_config_file():
-        if click.confirm('Config file does not exist, generate new keys and write file?'):
-            key_store = KeyStore(get_config_file_name(), new = True)
-            click.echo("Keystore written to {} \n Private Key: \n {} \n Public Key: \n {}".format(get_config_file_name(), key_store.private_key, key_store.public_key))
+        if click.confirm('Config file does not exist,'
+                         ' generate new keys and write file?'):
+            key_store = KeyStore(get_config_file_name(), new=True)
+            click.echo("Keystore written to {} \n Private Key: \
+                \n {} \n Public Key: \n {}".format(
+                get_config_file_name(),
+                key_store.private_key,
+                key_store.public_key))
     else:
         key_store = KeyStore(get_config_file())
-        private = click.prompt('Private Key', default = key_store.private_key)
-        public = click.prompt('Public Key', default = key_store.public_key)
+        private = click.prompt('Private Key', default=key_store.private_key)
+        public = click.prompt('Public Key', default=key_store.public_key)
         key_store.update_key(private, public)
         click.echo("Keystore written to {}".format(get_config_file()))
 

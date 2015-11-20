@@ -10,6 +10,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        poc=poc.commands:cli
+        secure_sim=poc.commands:cli
     ''',
 )

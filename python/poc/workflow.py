@@ -1,7 +1,6 @@
 def generate_mesh():
     print "Generating Mesh Files"
 
-
 def generate_control_files():
     print "Generating Simulation Control Files"
 

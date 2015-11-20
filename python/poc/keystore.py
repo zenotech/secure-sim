@@ -1,8 +1,6 @@
 import os
 import ConfigParser
-
 from binascii import hexlify
-
 import backend.ecc as crypto
 
 
@@ -81,5 +79,4 @@ class KeyStore(object):
     def decrypt_file(self, in_file, out_file):
         return self.key.decrypt_file(in_file, out_filename=out_file)
 
-if __name__ == '__main__':
-    SecureSim('./internal.site')
+

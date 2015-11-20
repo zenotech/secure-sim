@@ -28,6 +28,12 @@ class Key(object):
     def generate_key():
         return pyelliptic.ECC(curve=CURVE)
 
+    def get_private_key(self):
+        return self.key.get_privkey()
+
+    def get_public_key(self):
+        return self.key.get_pubkey()
+
     def shared_key(self, pub_key, format = 'binary'):
         """Generate a new shared encryption key for given public key"""
         shared_key = self.key.get_ecdh_key(pub_key, format)

@@ -114,6 +114,7 @@ def get_config_value(item):
         cfg = os.path.join(click.get_app_dir(APP_NAME), 'config')
     parser = ConfigParser.RawConfigParser()
     parser.read([cfg])
+    click.echo(parser.sections())
     for section in parser.sections():
         for key, value in parser.items(section):
             if key == item:

@@ -31,6 +31,13 @@ def shared_key(priv_key, pub_key, format = 'binary'):
     return shared_key
 
 
+def rand_shared_key(priv_key, pub_key, format = 'binary'):
+    """Generate a new shared encryption key from a keypair."""
+    shared_key = priv_key.get_ecdh_key(pub_key, format)
+    shared_key = shared_key[:32] + SHA384.new(shared_key[32:]).digest()
+    return shared_key
+
+
 def encrypt_file(key, public_key, in_filename, out_filename=None, ciphername='aes-256-cbc'):
     """ 
     """
@@ -74,6 +81,7 @@ def encrypt_file(key, public_key, in_filename, out_filename=None, ciphername='ae
             outfile.write(ctx.final())
     end = time.clock()
     return ((end - start, filesize, out_filename))
+
 
 def decrypt_file(key, in_filename, out_filename=None, ciphername='aes-256-cbc'):
     """ 

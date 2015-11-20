@@ -10,6 +10,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        aws_poc=poc.commands:cli
+        poc=poc.commands:cli
     ''',
 )

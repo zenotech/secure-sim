@@ -37,7 +37,7 @@ def start_server(share_key, max_requests = None, valid_ips = None):
     _key = share_key
     _client_ips = valid_ips
     _max_requests = max_requests
-    app.run()
+    app.run(host='0.0.0.0')
 
 
 def get_sym_key(url):

@@ -1,11 +1,12 @@
 import os
 import click
 from binascii import hexlify
+import requests
 
 from keystore import KeyStore
 from backend import ecc as crypto
 import workflow as flow
-from agent import start_server
+import agent
 
 APP_NAME = 'hpc_security_demo'
 
@@ -78,13 +79,20 @@ def encrypt(target_site, input, output):
 
 @cli.command()
 @click.argument('input', "File to decrypt")
-@click.argument('key', "Symetric Key to decrypt with", required=False)
+@click.option('--key', default=None)
+@click.option('--agent_url', default=None)
 @click.option('--output', help='File name to output', default=None)
-def decrypt(input, key, output):
+def decrypt(input, key, agent_url, output):
     """Decrypt File"""
     click.echo("Decrypting file {}".format(input))
     if key:
         time, size, out_file =  crypto.decrypt_file_with_symkey(input, key, output)
+        click.echo("{} bytes decrypted in {} seconds,output to {}".format(size,
+                                                                          time,
+                                                                          out_file))
+    elif agent_url:
+        sym_key = agent.get_sym_key(agent_url)
+        time, size, out_file =  crypto.decrypt_file_with_symkey(input, sym_key, output)
         click.echo("{} bytes decrypted in {} seconds,output to {}".format(size,
                                                                           time,
                                                                           out_file))
@@ -121,7 +129,7 @@ def start_agent(public_key, private_key, encrypted_file, count, client_ip):
     """Start the agent process"""
     key = crypto.Key(priv_key = private_key, pub_key = public_key)
     cipher = key.read_cipher(encrypted_file)
-    start_server(cipher, valid_ips = client_ip, max_requests = count)
+    agent.start_server(cipher, valid_ips = client_ip, max_requests = count)
 
 @cli.command()
 def configure():

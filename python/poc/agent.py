@@ -2,6 +2,8 @@ from flask import Flask
 from flask import request
 from flask import abort
 
+import requests
+
 app = Flask(__name__)
 
 _key = None
@@ -36,3 +38,9 @@ def start_server(share_key, max_requests = None, valid_ips = None):
     _client_ips = valid_ips
     _max_requests = max_requests
     app.run()
+
+
+def get_sym_key(url):
+    r = requests.get(url)
+    if r.status_code == requests.codes.ok:
+        return r.text

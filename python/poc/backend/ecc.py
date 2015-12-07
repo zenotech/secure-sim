@@ -16,7 +16,7 @@ class Key(object):
 
     def __init__(self, priv_key=None, pub_key=None):
         if priv_key or pub_key:
-            if pub_key and pub_key:
+            if pub_key and priv_key:
                 pubkey_x, pubkey_y = pyelliptic.ECC._decode_pubkey(
                     pub_key,
                     format='hex')
@@ -32,6 +32,7 @@ class Key(object):
 
     @staticmethod
     def generate_key():
+        print len(pyelliptic.ECC(curve=CURVE).get_privkey())
         return pyelliptic.ECC(curve=CURVE)
 
     def get_private_key(self):
@@ -111,5 +112,20 @@ class Key(object):
                 outfile.truncate(origsize)
         end = time.clock()
         return ((end - start, origsize, out_filename))
+
+    def read_cipher(self, in_filename):
+        """ 
+        """
+        blocksize = pyelliptic.OpenSSL.get_cipher(CIPHER).get_blocksize()
+
+        with open(in_filename, 'rb') as infile:
+            iv = infile.read(blocksize)
+            coord_len = len(self.key.pubkey_x) * 2 + 1
+            pkey = infile.read(coord_len)
+            pubkey_x, pubkey_y = pyelliptic.ECC._decode_pubkey(pkey)
+            key = sha512(self.key.raw_get_ecdh_key(pubkey_x, 
+                                                   pubkey_y)).digest()
+            key_e, key_m = key[:32], key[32:]
+            return (iv, key_e)
 
 

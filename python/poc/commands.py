@@ -4,6 +4,8 @@ from binascii import hexlify
 
 from keystore import KeyStore
 from backend import ecc as crypto
+import workflow as flow
+from agent import start_server
 
 APP_NAME = 'hpc_security_demo'
 
@@ -12,7 +14,7 @@ APP_NAME = 'hpc_security_demo'
 @click.pass_context
 def cli(ctx):
     """HPC Security Command Line Tools"""
-    if ctx.invoked_subcommand not in ['configure', 'generate_key']:
+    if ctx.invoked_subcommand not in ['configure', 'generate_key', 'start_agent']:
         config = get_config_file()
         if config is None:
             raise click.UsageError("Configuration not found!"
@@ -85,6 +87,37 @@ def decrypt(input, output):
     click.echo("{} bytes decrypted in {} seconds,output to {}".format(size,
                                                                       time,
                                                                       out_file))
+
+
+@cli.command()
+@click.argument('site')
+def workflow(site):
+    """Run the simulated workfow"""
+    click.echo("Preparing input for site {}".format(site))
+    key_store = KeyStore(get_config_file())
+    if key_store.does_site_exist(site):
+        flow.generate_mesh()
+        flow.generate_control_files()
+        flow.compress_input()
+        flow.encrpyt_input()
+        flow.transfer_files()
+    else:
+        click.echo("Site {} does not exist in keystore, please add_site".format(site))
+
+
+@cli.command()
+@click.argument('public_key')
+@click.argument('private_key')
+@click.argument('encrypted_file')
+@click.option('--count', '-c', default=None, type=int)
+@click.argument('client_ip', nargs=-1)
+def start_agent(public_key, private_key, encrypted_file, count, client_ip):
+    """Start the agent process"""
+    key = crypto.Key(priv_key = private_key, pub_key = public_key)
+    cipher = key.read_cipher(encrypted_file)
+    click.echo(cipher)
+    start_server(cipher, valid_ips = client_ip, max_requests = count)
+
 
 @cli.command()
 def configure():

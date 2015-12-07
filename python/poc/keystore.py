@@ -37,6 +37,8 @@ class KeyStore(object):
         parser.add_section('HOME')
         parser.set('HOME', 'public_key', self.public_key)
         parser.set('HOME', 'private_key',  self.private_key)
+        if not os.path.exists(os.path.dirname(config_file)):
+            os.makedirs(os.path.dirname(config_file))
         with open(config_file, "w+") as f:
             parser.write(f)
         self.config_file = config_file

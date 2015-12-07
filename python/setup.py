@@ -6,7 +6,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'Click', 'pyelliptic', 'pycrypto'
+        'Click', 'pyelliptic', 'pycrypto', 'flask', 'requests'
     ],
     entry_points='''
         [console_scripts]

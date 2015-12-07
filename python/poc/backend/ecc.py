@@ -5,6 +5,7 @@ import struct
 import Crypto.Hash.SHA384 as SHA384
 from hashlib import sha512
 from binascii import unhexlify
+from binascii import hexlify
 
 # CURVE = 'secp256k1'
 # CURVE = 'secp521r1'
@@ -113,12 +114,13 @@ class Key(object):
         end = time.clock()
         return ((end - start, origsize, out_filename))
 
-    def read_cipher(self, in_filename):
+    def read_cipher(self, in_filename, out_filename=None):
         """ 
         """
         blocksize = pyelliptic.OpenSSL.get_cipher(CIPHER).get_blocksize()
 
         with open(in_filename, 'rb') as infile:
+            origsize = struct.unpack('<Q', infile.read(struct.calcsize('Q')))[0]
             iv = infile.read(blocksize)
             coord_len = len(self.key.pubkey_x) * 2 + 1
             pkey = infile.read(coord_len)
@@ -126,6 +128,35 @@ class Key(object):
             key = sha512(self.key.raw_get_ecdh_key(pubkey_x, 
                                                    pubkey_y)).digest()
             key_e, key_m = key[:32], key[32:]
-            return (iv, key_e)
+            return hexlify(key_e)
+
+
+def decrypt_file_with_symkey(in_filename, key, out_filename=None):
+    """ 
+    """
+    start = time.clock()
+    if not out_filename:
+        if in_filename.endswith('.enc'):
+            out_filename = in_filename[:-4]
+
+    blocksize = pyelliptic.OpenSSL.get_cipher(CIPHER).get_blocksize()
+
+    with open(in_filename, 'rb') as infile:
+        with open(out_filename, 'wb') as outfile:
+            origsize = struct.unpack('<Q', infile.read(struct.calcsize('Q')))[0]
+            iv = infile.read(blocksize)
+            key = unhexlify(key)
+            coord_len = len(pyelliptic.ECC(curve=CURVE).get_pubkey())
+            pkey = infile.read(coord_len)
+            ctx = pyelliptic.Cipher(key, iv, 0, CIPHER)
+            while True:
+                chunk = infile.read(blocksize)
+                if len(chunk) == 0:
+                    break
+                outfile.write(ctx.update(chunk))
+            # outfile.write(ctx.final())
+            outfile.truncate(origsize)
+    end = time.clock()
+    return ((end - start, origsize, out_filename))
 
 

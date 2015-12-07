@@ -78,16 +78,22 @@ def encrypt(target_site, input, output):
 
 @cli.command()
 @click.argument('input', "File to decrypt")
+@click.argument('key', "Symetric Key to decrypt with", required=False)
 @click.option('--output', help='File name to output', default=None)
-def decrypt(input, output):
+def decrypt(input, key, output):
     """Decrypt File"""
     click.echo("Decrypting file {}".format(input))
-    key_store = KeyStore(get_config_file())
-    time, size, out_file = key_store.decrypt_file(input, output)
-    click.echo("{} bytes decrypted in {} seconds,output to {}".format(size,
-                                                                      time,
-                                                                      out_file))
-
+    if key:
+        time, size, out_file =  crypto.decrypt_file_with_symkey(input, key, output)
+        click.echo("{} bytes decrypted in {} seconds,output to {}".format(size,
+                                                                          time,
+                                                                          out_file))
+    else:
+        key_store = KeyStore(get_config_file())
+        time, size, out_file = key_store.decrypt_file(input, output)
+        click.echo("{} bytes decrypted in {} seconds,output to {}".format(size,
+                                                                          time,
+                                                                          out_file))
 
 @cli.command()
 @click.argument('site')
@@ -115,9 +121,7 @@ def start_agent(public_key, private_key, encrypted_file, count, client_ip):
     """Start the agent process"""
     key = crypto.Key(priv_key = private_key, pub_key = public_key)
     cipher = key.read_cipher(encrypted_file)
-    click.echo(cipher)
     start_server(cipher, valid_ips = client_ip, max_requests = count)
-
 
 @cli.command()
 def configure():

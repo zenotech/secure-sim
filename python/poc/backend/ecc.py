@@ -44,9 +44,13 @@ class Key(object):
 
     def shared_key(self, pub_key, format='binary'):
         """Generate a new shared encryption key for given public key"""
-        shared_key = self.key.get_ecdh_key(pub_key, format)
-        shared_key = shared_key[:32] + SHA384.new(shared_key[32:]).digest()
-        return shared_key
+        curve = pyelliptic.OpenSSL.get_curve_by_id(self.key.curve)
+        ephem = pyelliptic.ECC(curve=curve)
+        pubkey_x, pubkey_y = pyelliptic.ECC._decode_pubkey(pub_key,
+                                                           format='hex')
+        key = sha512(ephem.raw_get_ecdh_key(pubkey_x, pubkey_y)).digest()
+        pubkey = ephem.get_pubkey()
+        return (pubkey, key[:32])
 
     def encrypt_file(self, public_key, in_filename, out_filename=None):
         """ 

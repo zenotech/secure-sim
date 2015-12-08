@@ -61,7 +61,10 @@ def add_site(site_name, public_key):
 def get_shared_key(site):
     """Generate a shared key for the site"""
     key_store = KeyStore(get_config_file())
-    click.echo(hexlify(key_store.get_shared_secret(site)))
+    pub_key, secret = key_store.get_shared_secret(site)
+    click.echo("Public Key: \n{}".format(hexlify(pub_key)))
+    click.echo("Secret: \n{}".format(hexlify(secret)))
+    # click.echo(hexlify(key_store.get_shared_secret(site)))
 
 
 @cli.command()

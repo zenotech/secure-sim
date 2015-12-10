@@ -1,7 +1,7 @@
 import os
 import click
 from binascii import hexlify
-import requests
+from importlib import import_module
 
 from keystore import KeyStore
 from backend import ecc as crypto
@@ -84,8 +84,9 @@ def encrypt(target_site, input, output):
 @click.argument('input', "File to decrypt")
 @click.option('--key', default=None)
 @click.option('--agent_url', default=None)
+@click.option('--key_module', default=None)
 @click.option('--output', help='File name to output', default=None)
-def decrypt(input, key, agent_url, output):
+def decrypt(input, key, agent_url, key_module, output):
     """Decrypt File"""
     click.echo("Decrypting file {}".format(input))
     if key:
@@ -99,6 +100,18 @@ def decrypt(input, key, agent_url, output):
         click.echo("{} bytes decrypted in {} seconds,output to {}".format(size,
                                                                           time,
                                                                           out_file))
+    elif key_module:
+        m = import_module(key_module)
+        key_func = getattr(m,'get_private_key')
+        priv_key = key_func()
+        if priv_key is not None:
+            key_store = KeyStore(get_config_file(), private_key = priv_key)
+            time, size, out_file = key_store.decrypt_file(input, output)
+            click.echo("{} bytes decrypted in {} seconds,output to {}".format(size,
+                                                                          time,
+                                                                          out_file))
+        else:
+            click.echo("Private Key not returned by key module")
     else:
         key_store = KeyStore(get_config_file())
         time, size, out_file = key_store.decrypt_file(input, output)

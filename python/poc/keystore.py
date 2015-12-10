@@ -6,7 +6,7 @@ import backend.ecc as crypto
 
 class KeyStore(object):
 
-    def __init__(self, config_file, new = False):
+    def __init__(self, config_file, private_key = None, new = False):
         self.sites = {}
         if new:
             self._write_new_config(config_file)
@@ -20,10 +20,13 @@ class KeyStore(object):
                 self.public_key = parser.get('HOME', 'public_key')
             else:
                 raise ValueError("Public key not found in config {}".format(config_file))
-            if parser.has_option('HOME', 'private_key'):
-                self.private_key = parser.get('HOME', 'private_key')
+            if private_key:
+                self.private_key = private_key
             else:
-                raise ValueError("Public key not found in config {}".format(config_file))
+                if parser.has_option('HOME', 'private_key'):
+                    self.private_key = parser.get('HOME', 'private_key')
+                else:
+                    raise ValueError("Private key not found in config {}".format(config_file))
             for section in parser.sections():
                 if section != "HOME":
                     self.sites[section] = parser.get(section, 'public_key')

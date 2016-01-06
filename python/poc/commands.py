@@ -73,7 +73,7 @@ def get_shared_key(site):
 @click.option('--output', '-o', help='File name to output', default=None)
 def encrypt(target_site, input, output):
     """Encrypt File"""
-    click.echo("Encrypting file {} for site {}".format(input, input))
+    click.echo("Encrypting file {} for site {}".format(input, target_site))
     key_store = KeyStore(get_config_file())
     time, size, out_file = key_store.encrypt_file(target_site, input, output)
     click.echo("{} bytes encrypted in {} seconds, output to {}".format(
@@ -122,7 +122,7 @@ def decrypt(input, key, agent_url, key_module, output):
 @cli.command()
 @click.argument('site')
 def workflow(site):
-    """Run the simulated workfow"""
+    """Run the simulated workflow"""
     click.echo("Preparing input for site {}".format(site))
     key_store = KeyStore(get_config_file())
     if key_store.does_site_exist(site):

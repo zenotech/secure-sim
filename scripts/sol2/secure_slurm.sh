@@ -1,18 +1,16 @@
-export TMP_FS="/scratch/ssim"
-export INPUT_FILE="/gpfs/thirdparty/zenotech/workarea/secure-sim/options/sol2/motorBike.tar.gz.enc" 
-export OUTPUT_FILE="./motorbike.tar.gz"
+TMP_FS="/scratch/ssim"
+INPUT_FILE="/gpfs/thirdparty/zenotech/workarea/secure-sim/options/sol2/motorBike.tar.gz.enc" 
+OUTPUT_FILE="./motorbike.tar.gz"
 
 echo "Running secure submit"
 echo "Allocated nodes $SLURM_NODELIST"
-export NODE_COUNT=`scontrol show hostnames $SLURM_NODELIST | wc -w`
+NODE_COUNT=`scontrol show hostnames $SLURM_NODELIST | wc -w`
 
 IPS=""
 for host in $SLURM_NODELIST;
 do
    IPS="$IPS `getent hosts $host | awk '{ print $1 }'`"
 done
-
-echo $IPS
 
 echo "Please enter public key:"
 read pubkey
@@ -22,10 +20,10 @@ read privkey
 
 echo "Starting Agent"
 srun -m arbitrary -w $SLURM_NODELIST -n 1 secure_sim start_agent $pubkey $privkey $INPUT_FILE -c $NODE_COUNT $IPS &
-export AGENT_HOST=`scontrol show hostnames $SLURM_NODELIST | sed -n '1p;'`
-echo $AGENT_HOST
+AGENT_HOST=`scontrol show hostnames $SLURM_NODELIST | sed -n '1p;'`
 
-sleep 120
+sleep 10
+
 echo "Decrypting file to local scratch"
 srun -m cyclic -n $NODE_COUNT hostname
 srun -m cyclic -n $NODE_COUNT mkdir -p $TMP_FS

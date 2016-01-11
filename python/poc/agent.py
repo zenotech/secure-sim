@@ -1,4 +1,3 @@
-import time
 from flask import Flask
 from flask import request
 from flask import abort
@@ -33,7 +32,7 @@ def shutdown_server():
     func()
 
 
-def start_server(share_key, max_requests = None, valid_ips = None):
+def start_server(share_key, max_requests=None, valid_ips=None):
     global _key, _client_ips, _max_requests
     _key = share_key
     _client_ips = valid_ips

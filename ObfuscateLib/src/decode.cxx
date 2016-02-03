@@ -10,6 +10,14 @@
 #include <dlfcn.h>
 #include <sys/types.h>
 
+#ifdef HAVE_BOOST
+#include <Python.h>
+#include <boost/python.hpp>
+#include <boost/python/dict.hpp>
+#endif
+
+#include "HashGen.h"
+
 using namespace std;
 
 typedef int (*ptrace_ptr_t)(int _request, pid_t _pid, caddr_t _addr, int _data);
@@ -30,23 +38,9 @@ string decode(unsigned char obfuscatedKey[SHA_DIGEST_LENGTH]){
         disable_gdb();
     #endif
 
-	// Generate long string
-	string className = typeid(std::string).name();
-	if(className.size() < SHA_DIGEST_LENGTH){
-		cout << "Auto generated string < hash length" << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	cout << "Str: " << className << endl;
-
 	// Hash the string to generate obfuscator
   	unsigned char hash[SHA_DIGEST_LENGTH]; // == 20
-
-	const unsigned char *ckey = reinterpret_cast<const unsigned char*>(className.c_str());
-
-  	SHA1(ckey, sizeof(className.size()) - 1, hash);
-
-  	cout << "Hash: " << hash << endl;
+  	generateObfuscator(hash);
 
 	// Xor key to recover Key
 	unsigned char originalKey[SHA_DIGEST_LENGTH]; 
@@ -58,6 +52,29 @@ string decode(unsigned char obfuscatedKey[SHA_DIGEST_LENGTH]){
 
 	return key;
 }
+
+string decodePython(boost::python::object py_key){
+	using namespace boost::python;
+
+	unsigned char obfuscatedKey[SHA_DIGEST_LENGTH];
+
+	// Extract python tuple
+	tuple tup = extract<tuple>(py_key);
+
+	for(int i = 0; i < SHA_DIGEST_LENGTH; ++i){
+		obfuscatedKey[i] = extract<unsigned int>(tup[i]);
+	}
+
+	return decode(obfuscatedKey);
+}
+
+#ifdef HAVE_BOOST
+BOOST_PYTHON_MODULE(libdecode) {
+  using namespace boost::python;
+
+  def("decode", decodePython);
+}
+#endif
 
 int main(int argc, char *argv[]){
 

@@ -5,10 +5,12 @@
 #include <iomanip>
 #include <fstream>
 #include <typeinfo>
-#include <openssl/sha.h>
+
 
 #include <dlfcn.h>
 #include <sys/types.h>
+
+#include "HashGen.h"
 
 using namespace std;
 
@@ -55,23 +57,11 @@ int main(int argc, char *argv[]){
 
 	cout << "Key: " << key << endl;
 
-	// Generate long string
-	string className = typeid(std::string).name();
-	if(className.size() < SHA_DIGEST_LENGTH){
-		cout << "Auto generated string < hash length" << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	cout << "Str: " << className << endl;
-
 	// Hash the string to generate obfuscator
   	unsigned char hash[SHA_DIGEST_LENGTH]; // == 20
 
-	const unsigned char *ckey = reinterpret_cast<const unsigned char*>(className.c_str());
+  	generateObfuscator(hash);
 
-  	SHA1(ckey, sizeof(className.size()) - 1, hash);
-
-  	cout << "Hash: " << hash << endl;
 
 	// Xor key to generate obfuscated Key
 	unsigned char obfuscatedSecretKey[SHA_DIGEST_LENGTH];

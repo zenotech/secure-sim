@@ -1,4 +1,11 @@
 
+#ifdef HAVE_BOOST
+#include <Python.h>
+#include <boost/python.hpp>
+#include <boost/python/tuple.hpp>
+#include <boost/python/list.hpp>
+#endif
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -10,11 +17,7 @@
 #include <dlfcn.h>
 #include <sys/types.h>
 
-#ifdef HAVE_BOOST
-#include <Python.h>
-#include <boost/python.hpp>
-#include <boost/python/dict.hpp>
-#endif
+
 
 #include "HashGen.h"
 
@@ -55,11 +58,18 @@ string decode(unsigned char obfuscatedKey[SHA_DIGEST_LENGTH]){
 
 string decodePython(boost::python::object py_key){
 	using namespace boost::python;
+    
+    //std::string object_classname = boost::python::extract<std::string>(py_key.attr("__class__").attr("__name__"));
+	//cout << object_classname << endl;
+
+	extract<boost::python::tuple> t(py_key);
+
+	t.check();
+
+	boost::python::tuple tup = t(); 
+	assert(len(tup) == SHA_DIGEST_LENGTH);
 
 	unsigned char obfuscatedKey[SHA_DIGEST_LENGTH];
-
-	// Extract python tuple
-	tuple tup = extract<tuple>(py_key);
 
 	for(int i = 0; i < SHA_DIGEST_LENGTH; ++i){
 		obfuscatedKey[i] = extract<unsigned int>(tup[i]);

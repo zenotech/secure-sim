@@ -56,6 +56,7 @@ string decode(unsigned char obfuscatedKey[SHA_DIGEST_LENGTH]){
 	return key;
 }
 
+#ifdef HAVE_BOOST
 string decodePython(boost::python::object py_key){
 	using namespace boost::python;
     
@@ -78,7 +79,6 @@ string decodePython(boost::python::object py_key){
 	return decode(obfuscatedKey);
 }
 
-#ifdef HAVE_BOOST
 BOOST_PYTHON_MODULE(libdecode) {
   using namespace boost::python;
 

@@ -16,3 +16,7 @@ Build:
 generate: creates a c++ header file and python file with obfuscated key.
 
 decode: shared library that provides support to decode obfuscated key returning original key
+
+decode_test: runs decode on a previously generated key.h file
+
+python_test: runs decode on previously generated key.py file

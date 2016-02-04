@@ -12,6 +12,8 @@ Build:
 
  Use cmake to build
 
+ Note: For OSX the python interface requires the shared library to use the .so extension not .dylib
+
 
 generate: creates a c++ header file and python file with obfuscated key.
 

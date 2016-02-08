@@ -27,10 +27,10 @@ def generate_key():
     """Generate new key pair"""
     key = crypto.Key.generate_key()
     click.echo('Private Key (len {}):: \n{}'.format(
-        len(hexlify(key.get_privkey())),
+        len(key.get_privkey()),
         hexlify(key.get_privkey())))
     click.echo('Public Key (len {})::\n{}'.format(
-        len(hexlify(key.get_pubkey())),
+        len(key.get_pubkey()),
         hexlify(key.get_pubkey())))
 
 

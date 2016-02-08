@@ -13,6 +13,7 @@
 #include <fstream>
 #include <typeinfo>
 #include <openssl/sha.h>
+#include <vector>
 
 #include <dlfcn.h>
 #include <sys/types.h>
@@ -35,25 +36,28 @@ void disable_gdb() {
     dlclose(handle);
 }
 
-string decode(unsigned char obfuscatedKey[SHA_DIGEST_LENGTH]){
+string decode(vector<unsigned char> obfuscatedKey){
 
     #if !(DEBUG) // Don't interfere with Xcode debugging sessions.
         disable_gdb();
     #endif
 
 	// Hash the string to generate obfuscator
-  	unsigned char hash[SHA_DIGEST_LENGTH]; // == 20
+  	unsigned char hash[SHA384_DIGEST_LENGTH]; // == 48
   	generateObfuscator(hash);
 
 	// Xor key to recover Key
-	unsigned char originalKey[SHA_DIGEST_LENGTH]; 
-	for(int i = 0; i < SHA_DIGEST_LENGTH; ++i){
-		originalKey[i] = obfuscatedKey[i] ^ hash[i];
+    string originalKey;
+	for(int i = 0; i < obfuscatedKey.size(); ++i){
+        if (i > SHA384_DIGEST_LENGTH) {
+            originalKey.push_back(obfuscatedKey[i] ^ hash[i - SHA384_DIGEST_LENGTH]);
+        }
+        else { 
+            originalKey.push_back(obfuscatedKey[i] ^ hash[i]);
+        }	
 	}
 
-	string key = reinterpret_cast<char*>(originalKey);
-
-	return key;
+	return originalKey;
 }
 
 #ifdef HAVE_BOOST
@@ -68,15 +72,14 @@ string decodePython(boost::python::object py_key){
 	t.check();
 
 	boost::python::tuple tup = t(); 
-	assert(len(tup) == SHA_DIGEST_LENGTH);
 
-	unsigned char obfuscatedKey[SHA_DIGEST_LENGTH];
+    vector<unsigned char> key_vector;
 
-	for(int i = 0; i < SHA_DIGEST_LENGTH; ++i){
-		obfuscatedKey[i] = extract<unsigned int>(tup[i]);
+	for(int i = 0; i < len(tup); ++i){
+        key_vector.push_back(extract<unsigned int>(tup[i]));
 	}
-
-	return decode(obfuscatedKey);
+ 
+	return decode(key_vector);
 }
 
 BOOST_PYTHON_MODULE(libdecode) {
@@ -100,18 +103,20 @@ int main(int argc, char *argv[]){
 	getline(in,line);
 	getline(in,line);
 
-	unsigned char obfuscatedKey[SHA_DIGEST_LENGTH];
-	for(int i = 0; i < SHA_DIGEST_LENGTH; ++i){
-		getline(in,line);
-		line = line.substr(0,line.find(','));
-		
-		// Convert string to hex
-		unsigned char c = std::stoi(line, 0, 16);
+    vector<unsigned char> key_vector;
 
-		obfuscatedKey[i] = c;
-	}
+    while(getline(in, line).good()) {
+        if (line == "};") {
+            break;
+        }
+        line = line.substr(0,line.find(','));
+        
+        // Convert string to hex
+        unsigned char c = std::stoi(line, 0, 16);
+        key_vector.push_back(c);
+    }
 
-	string key = decode(obfuscatedKey);
+	string key = decode(key_vector);
 
 	cout << "Key: " << key << endl;
 

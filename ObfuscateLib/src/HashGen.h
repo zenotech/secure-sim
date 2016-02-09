@@ -7,15 +7,14 @@ void generateObfuscator(unsigned char hash[SHA384_DIGEST_LENGTH]){
 	using namespace std;
 
 	// Generate long string
-	string className = typeid(std::string).name();
+    srand(101);
+    string str = to_string(rand());
+    while (str.size() < SHA384_DIGEST_LENGTH){
+        str.append(to_string(rand()));
+    }
 	
-    if(className.size() < SHA384_DIGEST_LENGTH){
-		cout << "Auto generated string < hash length" << endl;
-		exit(EXIT_FAILURE);
-	}
+	const unsigned char *ckey = reinterpret_cast<const unsigned char*>(str.c_str());
 
-	const unsigned char *ckey = reinterpret_cast<const unsigned char*>(className.c_str());
-
-  	SHA384(ckey, sizeof(className.size()) - 1, hash);
+  	SHA384(ckey, sizeof(str.size()) - 1, hash);
 
   }

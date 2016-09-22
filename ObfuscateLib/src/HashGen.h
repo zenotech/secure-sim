@@ -1,6 +1,8 @@
 
 
 #include <openssl/sha.h>
+#include <stdlib.h>
+#include <string>
 
 void generateObfuscator(unsigned char hash[SHA384_DIGEST_LENGTH]){
 

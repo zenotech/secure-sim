@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(ObfuscateLib)
 
+set (CMAKE_CXX_STANDARD 11)
+
 find_package(OpenSSL REQUIRED)
 
 find_package(Boost COMPONENTS python)
@@ -21,7 +23,7 @@ add_library(decode SHARED src/decode.cxx)
 target_link_libraries(decode ${OPENSSL_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES})
 
 add_executable(generate src/generate.cxx)
-target_link_libraries(generate ${OPENSSL_LIBRARIES})
+target_link_libraries(generate ${OPENSSL_LIBRARIES} ${CMAKE_DL_LIBS})
 
 add_executable(decode_test src/decode.cxx)
-target_link_libraries(decode_test ${OPENSSL_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES})
+target_link_libraries(decode_test ${OPENSSL_LIBRARIES} ${Boost_PYTHON_LIBRARY} ${PYTHON_LIBRARIES} ${CMAKE_DL_LIBS})

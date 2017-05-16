@@ -129,7 +129,7 @@ def workflow(site):
         flow.generate_mesh()
         flow.generate_control_files()
         flow.compress_input()
-        flow.encrpyt_input()
+        flow.encrypt_input()
         flow.transfer_files()
     else:
         click.echo("Site {} does not exist in keystore, please add_site".format(site))

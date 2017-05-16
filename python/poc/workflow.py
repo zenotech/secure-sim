@@ -7,8 +7,8 @@ def generate_control_files():
 def compress_input():
     print "Compressing Input Files"
 
-def encrpyt_input():
-    print "Encrpyting Compressed Input"
+def encrypt_input():
+    print "Encrypting Compressed Input"
 
 def transfer_files():
     print "Transfer files to HPC site"
